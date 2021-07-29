@@ -1,18 +1,77 @@
-from logistic_regression import LogisticRegressionClassifier
+from sklearn.linear_model import LogisticRegression
 import pandas as pd
-
-path = r"C:\Users\Cejota\Documents\ML\ml-cin-2021\data\input\yeast.data"
-
-df = pd.read_csv(path, delimiter=r"\s+")
-print(df)
-y = df['class']
-x = df.drop('class', 1)
-
-#TODO: Processar os dados categoricos
-
-lgr = LogisticRegressionClassifier(x.shape[1])
-lgr.fit(x, y, learning_rate = 0.02, iterations = 500)
+import numpy as np
+from sklearn.model_selection import train_test_split
+from collections import Counter
 
 
-#parameters_out = train(x, y, learning_rate = 0.02, iterations = 500)
-#print(parameters_out)
+class Ensemble():
+    def __init__(self) -> None:
+        pass
+
+    def predict(self, classifiers, x):
+        predicoes = []
+        for classificador in classifiers:
+            preds = classificador.predict(x)
+            predicoes.append(preds)
+        predicoes = np.array(predicoes).T
+
+        true_predictions = []
+
+        for preds in predicoes:
+            c = Counter(preds)
+            true_predictions.append(c.most_common(1)[0][1])
+        return true_predictions
+    
+    def process_class(self, y):
+        temp = y.unique()
+        y = y
+        i = 0
+        for val in temp:
+            y = y.replace(val, i)
+            i += 1
+        return y
+
+        
+def get_categorical_columns(x):
+    binary = []
+    nbinary = []
+
+    for collumn in x.columns:
+      if (x[collumn].dtype == 'object'):
+        temp = x[collumn].unique()
+        if(len(temp) == 2):
+          binary.append(collumn)
+        else:
+          nbinary.append(collumn)
+
+    return binary, nbinary
+
+def process_binary_columns(x, binary):
+    for collumn in binary:
+      temp = x[collumn].unique()
+      print("Coluna: ", collumn, "Valores: ", temp, "\n")
+      i = -1
+      for val in temp:
+        x[collumn] = x[collumn].replace(val, i)
+        i += 2
+
+    return x
+
+def process_nbinary_columns(x, nbinary):
+    nomes = []
+    for collumn in nbinary:
+      temp = x[collumn].unique()
+      print("Coluna: ", collumn, "Valores: ", temp, "\n")
+      novas = pd.DataFrame()
+      for val in temp:
+        nome = collumn + '_' + val
+        nomes.append(nome)
+        x[nome] = np.zeros(len(x))
+      for i in range(len(x)):
+        x[collumn + '_' + x[collumn].iloc[i]].iloc[i] = 1
+    x = x.drop(columns=nbinary)
+
+    return x
+
+

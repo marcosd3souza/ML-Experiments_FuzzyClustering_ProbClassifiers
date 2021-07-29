@@ -53,6 +53,7 @@ class BayesianKnnClassifier(BaseEstimator, ClassifierMixin):
 
 
     def predict(self, X):
+        print(self.get_nn_label)
         nn_labels = self.get_nn_label(X)
         
         labels = []
