@@ -1,6 +1,5 @@
 import numpy as np
 from sklearn import preprocessing
-import pandas as pd
 import math
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier, KernelDensity

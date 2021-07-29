@@ -151,9 +151,10 @@ class FuzzyClustering:
         for t in range(0, self.number_of_iterations):
 
             # print('t: ', t, 'of T:', self.number_of_iterations)
-            G = self.update_prototypes(X, U)
+            
             M = self.construct_M_matrix(X, G, U)           
             U = self.get_U_matrix(X, G, M)
+            G = self.update_prototypes(X, U)
             
             J = self.get_objective(X, G, U, M)
 
@@ -176,37 +177,4 @@ class FuzzyClustering:
             return Js[best_J_idx], partition, best_G, best_U
         else:
             return None, [], [], []
-
-    # Modified Partition Entropy
-    def mpc_(self, U):
-        MPC = (self.number_of_clusters/(self.number_of_clusters-1)) * (1-((sum(sum(U**2)))/self.n_samples))
-        return 1 - MPC
-
-    # Partition Entropy
-    def part_entropy_(self, U):
-        pe = 0
-        for i in range(0, self.n_samples):
-            for j in range(0, self.number_of_clusters):
-                L = math.log(U[j, i])
-                pe += U[j, i]*L
-        PE = -pe/self.n_samples
-        return PE
-
-    def print_results(self, y_true, y_predict, U):
-        corrected_rand = adjusted_rand_score(y_true, y_predict)
-        f_measure = f1_score(y_true, y_predict, average='macro')
-        conf_matrix = confusion_matrix(y_true, y_predict)
-        acc = accuracy_score(y_true, y_predict)
-
-        mpc = self.mpc_(U)
-        p_entropy = self.part_entropy_(U)
-
-        print('confusion matrix: ', conf_matrix)
-        print('accuracy: ', acc)
-        print('f-measure: ', f_measure)
-        print('adjusted rand: ', corrected_rand)
-        print('modified partition coef: ', mpc)
-        print('partition entropy: ', p_entropy)
-
-        return acc, f_measure, corrected_rand, mpc, p_entropy
 

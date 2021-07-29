@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import sys
 from numpy.linalg import inv
 from numpy.linalg import det
@@ -18,11 +17,11 @@ class BayesGaussian():
          return self.class_priors
 
 
-    def get_ccps_likelihoods(self, X_features, y_target):
+    def set_ccps_likelihoods(self, X_features, y_target):
         self.num_features = X_features.shape[1]
         self.ccps_likelihoods = {}
         for Class in self.classes:
-            current_class_only = np.array([X_features.iloc[row_num, :] for row_num in range(len(y_target)) if y_target.iloc[row_num] == Class])
+            current_class_only = np.array([X_features[row_num, :] for row_num in range(len(y_target)) if y_target[row_num] == Class])
             self.ccps_likelihoods[Class] = [None for feature_num in range(self.num_features)]
             for feature_num in range(self.num_features):
                 current_feature_intersection_class = current_class_only[:, feature_num]
@@ -30,11 +29,10 @@ class BayesGaussian():
                                                             "feature_number": feature_num,
                                                             "mean": np.mean(current_feature_intersection_class),
                                                             "variance": np.var(current_feature_intersection_class, ddof=0)}
-        return self.ccps_likelihoods
     
     def fit(self, X_features, y_target):
         self.get_class_priors(y_target=y_target)
-        self.get_ccps_likelihoods(X_features=X_features, y_target=y_target)
+        self.set_ccps_likelihoods(X_features=X_features, y_target=y_target)
 
         return self
 
@@ -42,12 +40,12 @@ class BayesGaussian():
         covM = []
         fmean = []
         det = 1.0
-        for i in range(len(x)):
+        n_features = x.shape[1]
+        for i in range(0, n_features):
             val = (self.ccps_likelihoods[for_class][i]["variance"])
             covM.append(val)
             fmean.append(self.ccps_likelihoods[for_class][i]["mean"])
             det *= val
-
 
         if(det != 0):
             det = np.sqrt((1/det))
@@ -55,7 +53,7 @@ class BayesGaussian():
         term1 = x - fmean
         term2 = term1 * covM
         term3 = term1[np.newaxis]
-        term4 = np.dot((-(1/2)) * term3, term2)
+        term4 = ((-1/2) * term3)[0] * term2
 
         term5 = np.exp(term4)
 
@@ -98,5 +96,5 @@ class BayesGaussian():
     def predict(self, x):
         predicoes = []
         for i in range(len(x)):
-            predicoes.append(self.predict_one(x.iloc[i].values))
+            predicoes.append(self.predict_one(x))
         return np.array(predicoes)

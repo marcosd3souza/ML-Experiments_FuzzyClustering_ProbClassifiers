@@ -26,5 +26,13 @@ class DataReader:
         y = np.array(self.data.values[:, -1])
         y = self.get_y_labels(y)
         X = self.data.values[:, 1:-1]
-        X = self.scaled_data = MinMaxScaler().fit_transform(X)
+        # X = self.data.drop(columns=['class', 'sequence_name', 'vac', 'pox', 'erl'])
+        # X = X.values
+        # X = self.scaled_data = StandardScaler().fit_transform(X)
         return np.array(X, dtype=float), y
+    
+    # def get_data_for_classification(self):
+    #     y = np.array(self.data.values[:, -1])
+    #     y = self.get_y_labels(y)
+    #     X = self.data.drop(columns=['class', 'sequence_name', 'vac', 'pox', 'erl'])
+    #     return np.array(X, dtype=float), y
