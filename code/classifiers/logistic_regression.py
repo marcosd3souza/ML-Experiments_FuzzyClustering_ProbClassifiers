@@ -17,7 +17,7 @@ class LogisticRegressionClassifier():
         weight = self.init_parameters["weight"]
         bias = self.init_parameters["bias"]
         for i in range(iterations):
-                sigma = self.sigmoid(np.dot(x.astype(np.float16), weight.astype(np.float16)) + bias)
+                sigma = self.sigmoid(np.dot(x, weight) + bias)
                 loss = -1/size * np.sum(y * np.log(sigma)) + (1 - y) * np.log(1-sigma)
                 dW = 1/size * np.dot(x.T, (sigma - y))
                 db = 1/size * np.sum(sigma - y)
@@ -26,6 +26,7 @@ class LogisticRegressionClassifier():
 
         self.init_parameters["weight"] = weight
         self.init_parameters["bias"] = bias
+
         return self.init_parameters
 
     def fit(self, x, y, learning_rate, iterations):
