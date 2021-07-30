@@ -22,15 +22,6 @@ class Ensemble():
             c = Counter(preds)
             true_predictions.append(c.most_common(1)[0][1])
         return true_predictions
-    
-    def process_class(self, y):
-        temp = y.unique()
-        y = y
-        i = 0
-        for val in temp:
-            y = y.replace(val, i)
-            i += 1
-        return y
 
         
 def get_categorical_columns(x):
