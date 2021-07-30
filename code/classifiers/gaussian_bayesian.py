@@ -59,7 +59,7 @@ class BayesGaussian():
         term5 = np.exp(term4)
 
         term7 = ((2.0 * math.pi) ** (- len(x) /2 ))
-        term8 = det * term5
+        term8 = np.sqrt(det) * term5
         term9 = term7 * term8
         return term9
 
