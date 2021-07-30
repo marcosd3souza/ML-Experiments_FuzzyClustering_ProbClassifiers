@@ -44,13 +44,14 @@ class BayesGaussian():
         det = 1.0
         for i in range(len(x)):
             val = (self.ccps_likelihoods[for_class][i]["variance"])
-            covM.append(val)
+            if val != 0:
+                covM.append(1/val)
+            else:
+                covM.append(0)
             fmean.append(self.ccps_likelihoods[for_class][i]["mean"])
             det *= val
 
 
-        if(det != 0):
-            det = np.sqrt((1/det))
 
         term1 = x - fmean
         term2 = term1 * covM
@@ -58,7 +59,6 @@ class BayesGaussian():
         term4 = np.dot((-(1/2)) * term3, term2)
 
         term5 = np.exp(term4)
-
 
         term7 = ((2.0 * math.pi) ** (- len(x) /2 ))
         term8 = det * term5
