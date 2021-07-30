@@ -40,27 +40,28 @@ class BayesGaussian():
         covM = []
         fmean = []
         det = 1.0
-        n_features = x.shape[1]
+        n_features = x.shape[0]
         for i in range(0, n_features):
             val = (self.ccps_likelihoods[for_class][i]["variance"])
-            covM.append(val)
+            if val != 0:
+                covM.append(1/val)
+            else:
+                covM.append(0)
             fmean.append(self.ccps_likelihoods[for_class][i]["mean"])
             det *= val
 
-        if(det != 0):
-            det = np.sqrt((1/det))
 
         term1 = x - fmean
         term2 = term1 * covM
-        term3 = term1[np.newaxis]
-        term4 = ((-1/2) * term3)[0] * term2
+        term3 = (-1/2) * term1[np.newaxis]
+        term4 = np.dot(term3, term2)
 
         term5 = np.exp(term4)
 
-
         term7 = ((2.0 * math.pi) ** (- len(x) /2 ))
-        term8 = det * term5
+        term8 = np.sqrt(det) * term5
         term9 = term7 * term8
+
         return term9
 
     def get_bayes_numerator(self, input_ex, for_class):
@@ -96,5 +97,5 @@ class BayesGaussian():
     def predict(self, x):
         predicoes = []
         for i in range(len(x)):
-            predicoes.append(self.predict_one(x))
+            predicoes.append(self.predict_one(x[i]))
         return np.array(predicoes)
