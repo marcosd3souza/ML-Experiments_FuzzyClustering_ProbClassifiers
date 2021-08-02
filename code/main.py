@@ -19,7 +19,18 @@ from data_reader import DataReader
 from clustering import FuzzyClustering
 import time
 
-X, y = DataReader().get_data()
+X, y = DataReader().get_preprocessed_data() # get_data()
+
+n_samples = X.shape[0]
+number_of_clusters = 10
+
+fcm_results = {
+    'mpc': [],
+    'p_entropy': [],
+    'cr': [],
+    'acc': [],
+    'f_measure': []
+}
 
 t1=time.time()
 
@@ -33,11 +44,20 @@ best_prototypes = []
 # e = 10^−10
 m_candi = [1.1, 1.6, 2.0]
 for mi in m_candi:
-    fcm = FuzzyClustering(T=150, c=10, e=10**-10, m=mi)
+    fcm = FuzzyClustering(T=150, c=number_of_clusters, e=10**-10, m=mi)
 
     for it in range(0, 100):
         print(f'Iteration {it} of 100')
         J, partition, prototypes, U = fcm.fit_predict(X)
+
+        metrics = Evaluation(y, partition, U, number_of_clusters, n_samples)
+        mpc, p_entropy, acc, f_measure, corrected_rand = metrics.get_clustering_results()
+
+        fcm_results['mpc'].append(mpc)
+        fcm_results['p_entropy'].append(p_entropy)
+        fcm_results['cr'].append(corrected_rand)
+        fcm_results['acc'].append(acc)
+        fcm_results['f_measure'].append(f_measure)
 
         if J is not None and J < best_J:
             best_J = J
@@ -47,18 +67,18 @@ for mi in m_candi:
 t2=time.time()
 print("Tempo total de execução do modelo: %f" %(t2-t1))
 
+df = pd.DataFrame(fcm_results)
+df.to_csv('./../data/output/clustering_results.csv', sep=';', index=False)
+
 print('############### best results ###################################')
 print('J: ', best_J)
 print('prototypes: ', best_prototypes)
 # fcm.print_results(y, best_partition, best_U)
-n_samples = X.shape[0]
-number_of_clusters = 10
 
 clustering_metrics = Evaluation(y, best_partition, best_U, number_of_clusters, n_samples)
 clustering_metrics.print_results()
 
 print('################################################################')
-
 
 ################################################ Segunda parte do projeto ####################################################
 
@@ -72,6 +92,14 @@ cls = [PG, BG, LR, KNN]
 classifiers_names = ['PG', 'BG', 'LR', 'KNN', 'ENSEMBLE']
 ensemble = Ensemble()
 
+folds_results = {
+    'fold': [],
+    'classifier': [],
+    'error_rate': [],
+    'f_measure': [],
+    'precision': [],
+    'recall': []
+}
 resultados = [[],[],[],[],[]]
 k = 0
 for train_index, test_index in skf.split(X, y):
@@ -101,29 +129,62 @@ for train_index, test_index in skf.split(X, y):
     print("Resultado do classificador LR para K = ", k)
     acc_LR, f_measure_LR, precision_LR, recall_LR = LR_metrics.print_results()
     resultados[0].append([1 - acc_LR, f_measure_LR, precision_LR, recall_LR])
+    folds_results['fold'].append(k)
+    folds_results['classifier'].append('LR')
+    folds_results['error_rate'].append(1 - acc_LR)
+    folds_results['f_measure'].append(f_measure_LR)
+    folds_results['precision'].append(precision_LR)
+    folds_results['recall'].append(recall_LR)
 
-    print("Resultado do classificador LR para K = ", k)
+    print("Resultado do classificador PG para K = ", k)
     acc_PG, f_measure_PG, precision_PG, recall_PG = PG_metrics.print_results()
     resultados[1].append([1 - acc_PG, f_measure_PG, precision_PG, recall_PG])
+    folds_results['fold'].append(k)
+    folds_results['classifier'].append('PG')
+    folds_results['error_rate'].append(1 - acc_PG)
+    folds_results['f_measure'].append(f_measure_PG)
+    folds_results['precision'].append(precision_PG)
+    folds_results['recall'].append(recall_PG)
 
-    print("Resultado do classificador LR para K = ", k)
+    print("Resultado do classificador KNN para K = ", k)
     acc_KNN, f_measure_KNN, precision_KNN, recall_KNN = KNN_metrics.print_results()
     resultados[2].append([1 - acc_KNN, f_measure_KNN, precision_KNN, recall_KNN])
+    folds_results['fold'].append(k)
+    folds_results['classifier'].append('KNN')
+    folds_results['error_rate'].append(1 - acc_KNN)
+    folds_results['f_measure'].append(f_measure_KNN)
+    folds_results['precision'].append(precision_KNN)
+    folds_results['recall'].append(recall_KNN)
 
-    print("Resultado do classificador LR para K = ", k)
+    print("Resultado do classificador BG para K = ", k)
     acc_BG, f_measure_BG, precision_BG, recall_BG = BG_metrics.print_results()
     resultados[3].append([1 - acc_BG, f_measure_BG, precision_BG, recall_BG])
+    folds_results['fold'].append(k)
+    folds_results['classifier'].append('BG')
+    folds_results['error_rate'].append(1 - acc_BG)
+    folds_results['f_measure'].append(f_measure_BG)
+    folds_results['precision'].append(precision_BG)
+    folds_results['recall'].append(recall_BG)
 
-    print("Resultado do classificador LR para K = ", k)
+    print("Resultado do classificador ENSEMBLE para K = ", k)
     acc_ENSEMBLE, f_measure_ENSEMBLE, precision_ENSEMBLE, recall_ENSEMBLE = ENSEMBLE_metrics.print_results()
     resultados[4].append([1 - acc_ENSEMBLE, f_measure_ENSEMBLE, precision_ENSEMBLE, recall_ENSEMBLE])
+    folds_results['fold'].append(k)
+    folds_results['classifier'].append('ENSEMBLE')
+    folds_results['error_rate'].append(1 - acc_ENSEMBLE)
+    folds_results['f_measure'].append(f_measure_ENSEMBLE)
+    folds_results['precision'].append(precision_ENSEMBLE)
+    folds_results['recall'].append(recall_ENSEMBLE)
 
     k += 1
+
+df = pd.DataFrame(folds_results)
+df.to_csv('./../data/output/folds_results.csv', sep=';', index=False)
 
 n = len(y_test_k)
 k = 0
 
-metricas_friedman = {}
+metricas_avg = {}
 for name in classifiers_names:
     res = np.array(resultados[k]).T
     
@@ -143,7 +204,7 @@ for name in classifiers_names:
     cobertura = 1.96 * np.sqrt( (cobertura * (1 - cobertura)) / n)
     print("Recall (cobertura) média para " + name + " :", (cobertura * 100), "\n")
 
-    metricas_friedman[name] = {"Classificador": name, "Erro": erro, "Fscore": fscore, "Precision": precision, "Recall": cobertura}
+    metricas_avg[name] = {"Classificador": name, "Erro": erro, "Fscore": fscore, "Precision": precision, "Recall": cobertura}
     k += 1
 
 # with open('data\output\metricas_friedman.csv', 'w') as f:

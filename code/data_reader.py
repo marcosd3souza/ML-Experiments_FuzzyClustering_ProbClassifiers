@@ -2,7 +2,7 @@ import pandas as pd
 import parameters as params
 import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-
+from imblearn.over_sampling import SMOTE
 
 class DataReader:
     def __init__(self):
@@ -26,13 +26,24 @@ class DataReader:
         y = np.array(self.data.values[:, -1])
         y = self.get_y_labels(y)
         X = self.data.values[:, 1:-1]
-        # X = self.data.drop(columns=['class', 'sequence_name', 'vac', 'pox', 'erl'])
+        # X = self.data.drop(columns=['class', 'sequence_name', 'pox', 'erl'])
         # X = X.values
         # X = self.scaled_data = StandardScaler().fit_transform(X)
         return np.array(X, dtype=float), y
     
-    # def get_data_for_classification(self):
-    #     y = np.array(self.data.values[:, -1])
-    #     y = self.get_y_labels(y)
-    #     X = self.data.drop(columns=['class', 'sequence_name', 'vac', 'pox', 'erl'])
-    #     return np.array(X, dtype=float), y
+    def get_oversampled_data(self, X, y):    
+        sm = SMOTE(k_neighbors=3)
+
+        # Fit the model to generate the data.
+        X_new, y_new = sm.fit_resample(X, y)
+        
+        return X_new, y_new
+    
+    def get_preprocessed_data(self):
+        y = np.array(self.data.values[:, -1])
+        y = self.get_y_labels(y)
+        X = self.data.drop(columns=['class', 'sequence_name'])
+
+        # X_new, y_new = self.get_oversampled_data(X, y)
+        
+        return X.values, y

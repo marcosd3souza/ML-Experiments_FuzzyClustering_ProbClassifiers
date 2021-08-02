@@ -25,10 +25,21 @@ class Evaluation():
         pe = 0
         for i in range(0, self.n_samples):
             for j in range(0, self.number_of_clusters):
+                if U[j, i] == 0.0:
+                    U[j, i] = 0.000001
                 L = np.log(U[j, i])
                 pe += U[j, i]*L
         PE = -pe/self.n_samples
         return PE
+    
+    def get_clustering_results(self):
+        acc = accuracy_score(self.y_true, self.y_predict)
+        f_measure = f1_score(self.y_true, self.y_predict, average='macro')
+        corrected_rand = adjusted_rand_score(self.y_true, self.y_predict)
+        mpc = self.mpc_(self.U)
+        p_entropy = self.part_entropy_(self.U)
+
+        return mpc, p_entropy, acc, f_measure, corrected_rand
 
     def print_results(self):
         corrected_rand = adjusted_rand_score(self.y_true, self.y_predict)

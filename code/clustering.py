@@ -44,20 +44,20 @@ class FuzzyClustering:
                 degree = np.float128(0.0)
                 M_i_diag = np.diag(M[i])
 
-                numerator = np.sum(M_i_diag * ((X[k] - G[i])**2), dtype=np.float64)
+                numerator = np.sum(M_i_diag * ((X[k] - G[i])**2), dtype=np.float128)
 
                 for h in range(0, self.number_of_clusters):
                     M_h_diag = np.diag(M[h])
                     
-                    denominator = np.sum(M_h_diag * ((X[k] - G[h])**2), dtype=np.float64)
+                    denominator = np.sum(M_h_diag * ((X[k] - G[h])**2), dtype=np.float128)
                     if denominator != 0:
-                        result = (numerator/denominator)
+                        result = numerator/denominator
                         degree += result ** (1/(self.m-1))
                         
                 if degree > 0.0:
                     U[i, k] = degree ** -1
                 else:
-                    U[i, k] = degree
+                    U[i, k] = 1e-10
 
         return np.array(U)
 
@@ -74,7 +74,11 @@ class FuzzyClustering:
             
             for k in range(0, self.n_samples):
                 numerator += (U[i, k] ** self.m) * X[k]
-            G_i = numerator / denominator
+            
+            if np.min(denominator) > 0.0:
+                G_i = numerator / denominator
+            else:
+                G_i = numerator
 
             G.append(G_i)
         return np.array(G)
@@ -96,7 +100,7 @@ class FuzzyClustering:
         for i in range(0, self.number_of_clusters):
             Mi = np.zeros([self.n_features, self.n_features])
             Mi_diag = []
-            numerator = np.float128(1.0)
+            numerator = 1.0
 
             for h in range(0, self.n_features):
                 term = 0.0
@@ -107,11 +111,13 @@ class FuzzyClustering:
             numerator = numerator ** (1/self.n_features)
             
             for j in range(0, self.n_features):
-                denominator = 0.0
+                denominator = 0
                 for k in range(0, self.n_samples):
                     denominator += (U[i, k] ** self.m) * ((X[k, j] - G[i][j])**2)
-                result = (numerator/denominator)
-                Mi_diag.append(result)
+                
+                if denominator != 0:
+                    result = float(numerator/denominator)
+                    Mi_diag.append(result)
             
             np.fill_diagonal(Mi, Mi_diag)
 
@@ -145,23 +151,23 @@ class FuzzyClustering:
         # print('initial obj: ', J_0)
         
         # J_old = J_0
-        J_old = 9999999999999999
+        J_old = 99999
         
         count = 0
         for t in range(0, self.number_of_iterations):
 
             # print('t: ', t, 'of T:', self.number_of_iterations)
             
+            G = self.update_prototypes(X, U)
             M = self.construct_M_matrix(X, G, U)           
             U = self.get_U_matrix(X, G, M)
-            G = self.update_prototypes(X, U)
             
             J = self.get_objective(X, G, U, M)
 
             # cond = len(np.unique(np.argmax(U, axis=0))) != self.number_of_clusters
-            if np.isnan(J) or (abs(J-J_old) == 0.0) or J > J_old or J <= self.tolerance:
+            if np.isnan(J) or (J_old-J) < self.tolerance or J == 0.0:
                 break
-
+        
             Js.append(J)
             Us.append(U)
             Gs.append(G)
