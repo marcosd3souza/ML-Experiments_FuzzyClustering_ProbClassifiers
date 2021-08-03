@@ -1,9 +1,9 @@
 
-## [PROJETO DA DISCIPLINA APRENDIZAGEM DE MÁQUINA ](https://github.com/marcosd3souza/ml-cin-2021)
+### [PROJETO DA DISCIPLINA APRENDIZAGEM DE MÁQUINA ](https://github.com/marcosd3souza/ml-cin-2021)
 
-<img src="./logo.jpg" width="200" />
+<kbd><img src="./logo.jpg" width="300"/></kbd><br>
 
-```md
+```txt
 UNIVERSIDADE FEDERAL DE PERNAMBUCO - UFPE
 CENTRO DE INFORMÁTICA - CIn
 PROGRAMA DE PÓS-GRADUAÇÃO EM CIÊNCIA DA COMPUTAÇÃO
@@ -17,12 +17,20 @@ EQUIPE: Carlos Antônio Alves Júnior (caaj@cin.ufpe.br)
 
 <hr>
 
-### REQUERIMENTOS:
+#### [PROJETO DE APRENDIZAGEM DE MÁQUINA](./projeto-proposto.pdf)
 
-> #### [Python: `>= 3.7`](https://www.python.org)
+> ##### [PDF do Relatório](./relatorio-am-projeto-l.pdf)
 
-> #### Dependências utilizadas:
-```md
+> ##### [PDF da Apresentação](./slides-projeto-am.pdf)
+
+<hr>
+
+#### REQUERIMENTOS:
+
+> ##### [Python: `>= 3.7`](https://www.python.org)
+
+> ##### Dependências utilizadas:
+```txt
 # Precisa instalar:
 sklearn (scikit-learn),
 parameters,
@@ -40,8 +48,8 @@ time
 
 <hr>
 
-### EXECUTANDO A APLICAÇÃO:
+#### EXECUTANDO A APLICAÇÃO:
 
-#### Abra um terminal dentro da pasta `code/`;
+> ##### Abra um terminal dentro da pasta `code/`;
 
-#### Para executar o código do projeto insira o comando `python main.py`.
+> ##### Para executar o código do projeto insira o comando `python main.py`.
